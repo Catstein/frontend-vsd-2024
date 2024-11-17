@@ -1,3 +1,7 @@
+import { Card } from "./_lib/components/Card";
+
 export default function LoginPage() {
-  return <div>Login Page</div>;
+  return <div className="flex h-min">
+    <Card />
+  </div>;
 }
