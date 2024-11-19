@@ -1,6 +1,9 @@
+import { Navbar } from "@/components/Navbar";
+import { Toast } from "@/components/Toast";
+import { TokenProvider } from "@/contexts/useToken";
+import { inter } from "@/lib/fonts/fonts";
 import type { Metadata } from "next";
 import "./globals.css";
-import { inter } from "./fonts/fonts";
 
 export const metadata: Metadata = {
   title: "Conselho Tutelar de Piracicaba",
@@ -15,9 +18,12 @@ export default function RootLayout({
   return (
     <html lang="pt-br">
       <body
-        className={`${inter.className} flex items-center justify-center  antialiased w-screen h-screen bg-[#F4F4F5]`}
+        className={`${inter.className} flex flex-col items-center justify-center subpixel-antialiased w-screen h-screen bg-[#F4F4F5]`}
       >
-        {children}
+        <TokenProvider>
+          <Navbar />
+          <Toast>{children}</Toast>
+        </TokenProvider>
       </body>
     </html>
   );
