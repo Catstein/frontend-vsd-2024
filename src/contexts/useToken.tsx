@@ -38,8 +38,6 @@ export function TokenProvider({ children }: Readonly<TokenProviderProps>) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  console.log("token", token);
-
   const hasSomeValidRoute = useCallback((redirectTo: string) => {
     return (
       redirectTo.includes(routes.public[1]) ||

@@ -15,11 +15,17 @@ const buttonVariants = cva(
           "bg-[#0057A6] text-[#FFFFFF] !font-semibold text-sm leading-[1.3125rem] text-center shadow hover:bg-[#2B659A]",
         secondary:
           "bg-[#D9EBFE] text-[#18181B] !font-semibold text-sm leading-[1.3125rem] text-center shadow hover:bg-[#F4F4F5]",
+        outline:
+          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        iconButton:
+          "text-[#18181B] !font-semibold text-sm leading-[1.3125rem] text-center shadow hover:bg-[#D9EBFE] flex items-center justify-center",
         link: "underline-offset-2  hover:underline hover:decoration-solid text-[#18181B] !font-medium text-sm leading-[1.5rem] text-center",
       },
       size: {
         default: "h-[2.3125rem] py-2 px-4",
         linkButton: "h-[2.3125rem] py-2 mr-4",
+        iconButton: "w-[2rem] h-[2rem] p-2",
       },
     },
     defaultVariants: {

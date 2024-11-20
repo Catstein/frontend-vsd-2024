@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="pt-br">
       <body
-        className={`${inter.className} flex flex-col items-center justify-center subpixel-antialiased w-screen h-screen bg-[#F4F4F5]`}
+        className={`${inter.className} flex flex-col items-center subpixel-antialiased w-screen h-screen bg-[#F4F4F5]`}
       >
         <TokenProvider>
           <Navbar />

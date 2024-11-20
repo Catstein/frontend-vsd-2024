@@ -12,12 +12,9 @@ export function Navbar() {
 
   const { token, setToken } = useToken();
 
-  console.log("pathname", pathname);
-  console.log("here", token);
-
   return (
     dontNeedNavbar && (
-      <nav className="flex w-full h-[5rem] bg-[#FFFFFF] items-center">
+      <nav className="flex w-full min-h-[5rem] h-[5rem] bg-[#FFFFFF] items-center">
         <div className="px-8 flex justify-between w-full h-min">
           {/* content */}
           <div className="flex gap-4 items-center">

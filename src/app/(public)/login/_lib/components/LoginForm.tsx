@@ -45,7 +45,6 @@ export function LoginForm() {
       config: {},
     })
       .then((res) => {
-        console.log("res", res);
         toast((e) => (
           <MessageToast
             closeToast={e.closeToast}
