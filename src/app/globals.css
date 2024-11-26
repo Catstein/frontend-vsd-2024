@@ -77,3 +77,33 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar {
+  width: 0.3rem;
+  height: 0.3rem;
+  border: none;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-[#b2b3bf];
+  border-radius: 1rem;
+  border: none;
+}
+
+.hiddenScroll::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+.hiddenScroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border: none;
+}

@@ -1,0 +1,8 @@
+export const publicUnitOptions = [
+  { value: "SERVIÇOS DE PROTEÇÃO BASICA" },
+  { value: "CRAS - (CENTRO DE REFERENCIA DE ASSISTENCIA SOCIAL)" },
+  { value: "SERVIÇOS DE PROTEÇÃO MEDIA COMPLEXIDADE" },
+  { value: "CREAS (CENTRO DE REFERENCIA ESPECIALIZADO DA ASSISTENCIA SOCIAL)" },
+  { value: "UNIDADES DE ACOLHIMENTO" },
+  { value: "CENTRO POP" },
+];

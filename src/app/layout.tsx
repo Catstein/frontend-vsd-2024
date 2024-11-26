@@ -4,6 +4,7 @@ import { TokenProvider } from "@/contexts/useToken";
 import { inter } from "@/lib/fonts/fonts";
 import type { Metadata } from "next";
 import "./globals.css";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Conselho Tutelar de Piracicaba",
@@ -20,10 +21,14 @@ export default function RootLayout({
       <body
         className={`${inter.className} flex flex-col items-center subpixel-antialiased w-screen h-screen bg-[#F4F4F5]`}
       >
-        <TokenProvider>
-          <Navbar />
-          <Toast>{children}</Toast>
-        </TokenProvider>
+        <div id="modal-root" />
+
+        <Suspense>
+          <TokenProvider>
+            <Navbar />
+            <Toast>{children}</Toast>
+          </TokenProvider>
+        </Suspense>
       </body>
     </html>
   );

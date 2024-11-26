@@ -29,7 +29,7 @@ export const ContextComponent = createContext({} as UseTokenType);
 
 export const routes = {
   public: ["/login", "/"],
-  private: ["/socialProjects"],
+  private: ["/socialServices"],
 };
 
 export function TokenProvider({ children }: Readonly<TokenProviderProps>) {
@@ -46,7 +46,7 @@ export function TokenProvider({ children }: Readonly<TokenProviderProps>) {
   }, []);
 
   const gotoStartPage = useCallback(() => {
-    router.push("/socialProjects");
+    router.push("/socialServices");
   }, [router]);
 
   useEffect(() => {

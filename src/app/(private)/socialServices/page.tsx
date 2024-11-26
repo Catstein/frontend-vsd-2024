@@ -1,9 +1,10 @@
+import { PrivatePage } from "@/components/PrivatePage";
 import { Container } from "./_lib/components/Container";
 
 export default function SocialProjectsPage() {
   return (
-    <div className="flex h-full w-full items-center flex-col px-4">
+    <PrivatePage>
       <Container />
-    </div>
+    </PrivatePage>
   );
 }

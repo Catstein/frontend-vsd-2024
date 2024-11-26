@@ -1,0 +1,17 @@
+export const serviceProviderOptions = [
+  { value: "FUNJAPE" },
+  { value: "AFASCOM" },
+  { value: "CESAC" },
+  { value: "PASCA" },
+  { value: "AUMA" },
+  { value: "AVISTAR" },
+  { value: "CRAMI" },
+  { value: "CRP" },
+  { value: "APAE" },
+  { value: "APFP" },
+  { value: "BOM MENINO" },
+  { value: "LAR FRANCISCANO" },
+  { value: "PASSO A PASSO" },
+  { value: "ESPAÇO PIPA" },
+  { value: "APASPI" },
+];

@@ -1,38 +1,35 @@
-"use client";
-
 import { cn } from "@/lib/utils";
-import { FocusEvent, ChangeEvent, ComponentProps } from "react";
+import { ChangeEvent, ComponentProps, FocusEvent } from "react";
 import { Control, Controller } from "react-hook-form";
 
-export interface InputProps extends ComponentProps<"input"> {
+interface TextAreaProps extends ComponentProps<"textarea"> {
   name: string;
   title?: string;
   subtitle?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   control: Control<any>;
   onChangeHandler?(
-    event: ChangeEvent<HTMLInputElement>
-  ): ChangeEvent<HTMLInputElement>;
+    event: ChangeEvent<HTMLTextAreaElement>
+  ): ChangeEvent<HTMLTextAreaElement>;
   onBlurHandler?(
-    event: FocusEvent<HTMLInputElement>
-  ): FocusEvent<HTMLInputElement>;
+    event: FocusEvent<HTMLTextAreaElement>
+  ): FocusEvent<HTMLTextAreaElement>;
   changeValueOnChange?: boolean;
   changeValueOnBlur?: boolean;
 }
 
-export function Input({
+export function Textarea({
+  name,
   title,
   subtitle,
-  type,
-  className,
   control,
-  name,
   onChangeHandler,
   onBlurHandler,
   changeValueOnChange = true,
   changeValueOnBlur = true,
+  className,
   ...props
-}: InputProps) {
+}: TextAreaProps) {
   return (
     <Controller
       name={name}
@@ -54,12 +51,11 @@ export function Input({
             data-invalid={invalid}
             className="data-[invalid=true]:border-[#DC2625] data-[invalid=true]:border-[1px] rounded-md"
           >
-            <input
+            <textarea
               id={name}
               data-invalid={invalid}
-              type={type}
               className={cn(
-                "bg-[#FFFFFF] leading-[1.3125rem] placeholder:text-[#70707B] flex h-11 w-full rounded-md px-3 py-1 text-base shadow-sm transition-colors focus-visible:ring-1  disabled:cursor-not-allowed disabled:opacity-50 md:text-sm border-[1px] border-[#D1D1D6]",
+                "leading-[1.3125rem] placeholder:text-[#70707B] flex w-full rounded-md bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:bg-transparent focus-visible:ring-1  disabled:cursor-not-allowed disabled:opacity-50 md:text-sm border-[1px] border-[#D1D1D6] resize-none",
                 "focus:shadow-[0_0_0_2px] focus:shadow-[#2B659A] focus:border-none",
                 "focus:outline-1 focus:outline-[#D1D1D6] focus:-outline-offset-2",
                 "active:shadow-[0_0_0_2px] active:shadow-[#2B659A]",
@@ -67,6 +63,7 @@ export function Input({
                 className
               )}
               placeholder={props.placeholder}
+              rows={props.rows}
               ref={field.ref}
               name={field.name}
               onChange={(event) => {
@@ -85,8 +82,6 @@ export function Input({
                   field.onChange(event.target.value);
                 }
               }}
-              // ref={ref}
-              {...props}
             />
           </div>
           {errors[field.name]?.message && (

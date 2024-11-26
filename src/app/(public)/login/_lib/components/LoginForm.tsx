@@ -18,11 +18,7 @@ const loginForm = z.object({
     .email("Formato de e-mail inválido"),
   password: z
     .string({ message: "Campo obrigatório" })
-    .min(8, "Campo obrigatório")
-    .regex(
-      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
-      "Senha deve conter ao menos 8 caracteres incluindo 1 número, 1 letra maiúscula e um símbolo"
-    ),
+    .min(1, "Campo obrigatório"),
 });
 
 export function LoginForm() {
