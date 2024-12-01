@@ -75,8 +75,6 @@ export function TokenProvider({ children }: Readonly<TokenProviderProps>) {
         } else {
           gotoStartPage();
         }
-      } else if (haveToken && pathname === "/") {
-        gotoStartPage();
       } else if (token === "") {
         setToken(currentToken);
       }
@@ -84,8 +82,6 @@ export function TokenProvider({ children }: Readonly<TokenProviderProps>) {
   }, [token, pathname, router, searchParams, hasSomeValidRoute, gotoStartPage]);
 
   const setUserToken = useCallback(async (tokenValue: string) => {
-    console.log("func", tokenValue);
-
     if (typeof window !== "undefined") {
       localStorage.setItem("sessionToken", tokenValue);
     }

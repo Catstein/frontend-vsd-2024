@@ -35,6 +35,36 @@ const PaginationItem = React.forwardRef<
 ));
 PaginationItem.displayName = "PaginationItem";
 
+type PaginationButtonProps = {
+  isActive?: boolean;
+  className?: string;
+  children?: React.ReactNode;
+} & Pick<ButtonProps, "size"> &
+  React.ComponentProps<"button">;
+
+const PaginationButton = ({
+  className,
+  isActive,
+  size = "iconButton",
+  children,
+  ...props
+}: PaginationButtonProps) => (
+  <button
+    aria-current={isActive ? "page" : undefined}
+    className={cn(
+      buttonVariants({
+        variant: isActive ? "outline" : "ghost",
+        size,
+      }),
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </button>
+);
+PaginationButton.displayName = "PaginationButton";
+
 type PaginationLinkProps = {
   isActive?: boolean;
   className?: string;
@@ -68,8 +98,8 @@ PaginationLink.displayName = "PaginationLink";
 const PaginationPrevious = ({
   className,
   ...props
-}: React.ComponentProps<typeof PaginationLink>) => (
-  <PaginationLink
+}: React.ComponentProps<typeof PaginationButton>) => (
+  <PaginationButton
     aria-label="Go to previous page"
     size="default"
     className={cn("gap-1 pl-2.5", className)}
@@ -77,15 +107,15 @@ const PaginationPrevious = ({
   >
     <ChevronLeft className="h-4 w-4" />
     <span>Previous</span>
-  </PaginationLink>
+  </PaginationButton>
 );
 PaginationPrevious.displayName = "PaginationPrevious";
 
 const PaginationNext = ({
   className,
   ...props
-}: React.ComponentProps<typeof PaginationLink>) => (
-  <PaginationLink
+}: React.ComponentProps<typeof PaginationButton>) => (
+  <PaginationButton
     aria-label="Go to next page"
     size="default"
     className={cn("gap-1 pr-2.5", className)}
@@ -93,7 +123,7 @@ const PaginationNext = ({
   >
     <span>Next</span>
     <ChevronRight className="h-4 w-4" />
-  </PaginationLink>
+  </PaginationButton>
 );
 PaginationNext.displayName = "PaginationNext";
 
@@ -115,6 +145,7 @@ PaginationEllipsis.displayName = "PaginationEllipsis";
 export {
   Pagination,
   PaginationContent,
+  PaginationButton,
   PaginationLink,
   PaginationItem,
   PaginationPrevious,

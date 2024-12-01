@@ -11,8 +11,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const { data } = await params;
   const [projectUid] = data;
 
-  console.log("projectUid", projectUid);
-
   if (projectUid === "create") {
     return (
       <PrivatePage>

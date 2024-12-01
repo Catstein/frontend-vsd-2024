@@ -5,26 +5,28 @@ import { IAxiosRequestPattern } from "@/models/AxiosRequestPattern";
 import { ISocialService } from "@/models/entities/socialService";
 
 export type CreateSocialServiceBody = Partial<Pick<ISocialService, "uid">> &
-  Pick<
-    ISocialService,
-    | "service_name"
-    | "service_category"
-    | "description"
-    | "agent_name"
-    | "agent_role"
-    | "email"
-    | "phone"
-    | "website"
-    | "organ"
-    | "management"
-    | "public_unit"
-    | "organization"
-    | "service_provider"
-    | "main_law"
-    | "municipal_law"
-    | "laws"
-    | "naming_of_laws"
-    | "status"
+  Partial<
+    Pick<
+      ISocialService,
+      | "service_name"
+      | "service_category"
+      | "description"
+      | "agent_name"
+      | "agent_role"
+      | "email"
+      | "phone"
+      | "website"
+    > & {
+      organ: ISocialService["organ"] | null;
+      management: ISocialService["management"] | null;
+      public_unit: ISocialService["public_unit"] | null;
+      organization: ISocialService["organization"] | null;
+      service_provider: ISocialService["service_provider"] | null;
+      main_law: ISocialService["main_law"] | null;
+      municipal_law: ISocialService["municipal_law"] | null;
+      laws: ISocialService["laws"] | null;
+      naming_of_laws: ISocialService["naming_of_laws"] | null;
+    }
   >;
 
 export type createResult = ISocialService;

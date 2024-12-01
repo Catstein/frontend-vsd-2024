@@ -27,29 +27,45 @@ export function RequestContainer() {
     >
   >([]);
 
+  const requestPageSize = 10;
+
+  const [hasRequested, setHasRequested] = useState(false);
+
   const [isLoadingSocialServices, startTransition] = useTransition();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  function handleSetCurrentPage(newPageValue: number) {
+    setCurrentPage(newPageValue);
+  }
 
   const handleFindManyPublicSocialServices = (searchForm: {
     search?: string;
     categoryUid?: string;
   }) => {
     startTransition(async () => {
+      setHasRequested(true);
+
       const metadata: PublicSocialServiceParams = {
         search: searchForm.search,
         categoryUid:
           searchForm.categoryUid === "1" ? undefined : searchForm.categoryUid,
-        page: 1,
-        pageSize: 10,
+        page: currentPage,
+        pageSize: requestPageSize,
       };
-
-      console.log("metadata", metadata);
 
       const res = await findManyPublicSocialServices({
         payload: metadata,
         config: {},
       });
 
-      console.log("res", res);
+      const currentTotalPages = Math.ceil(
+        res.pagination.count / requestPageSize
+      );
+
+      setTotalPages(currentTotalPages);
+
       setServiceList(res.data);
     });
   };
@@ -79,6 +95,10 @@ export function RequestContainer() {
       <CardSection
         serviceList={serviceList}
         isLoading={isLoadingSocialServices}
+        hasRequested={hasRequested}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        handleSetCurrentPage={handleSetCurrentPage}
       />
     </>
   );

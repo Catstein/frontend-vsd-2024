@@ -82,7 +82,10 @@ export function SelectInput({
                     "data-[invalid=true]:outline-[#DC2625]",
                     className
                   )}
-                  value={inputValue}
+                  value={
+                    optionList.find((option) => option.value === field.value)
+                      ?.label ?? inputValue
+                  }
                   readOnly={props.readOnly}
                   placeholder={placeholder}
                   onChange={(event) => {

@@ -41,7 +41,6 @@ export function SearchSocialServiceForm({
 
   const getCategoryList = () => {
     startTransition(async () => {
-      console.log("getCategoryList", getCategoryList);
       const res = await findManyPublicServiceCategory({
         payload: {
           search: "",
@@ -60,8 +59,6 @@ export function SearchSocialServiceForm({
         },
         ...res.data,
       ]);
-
-      console.log("teste", res);
     });
   };
 

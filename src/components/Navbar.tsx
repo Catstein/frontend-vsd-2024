@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Button } from "./ui/Button";
-import { useToken } from "@/contexts/useToken";
+import { routes, useToken } from "@/contexts/useToken";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -11,6 +11,12 @@ export function Navbar() {
   const dontNeedNavbar = pathname !== "/login";
 
   const { token, setToken } = useToken();
+
+  const isInPrivateRoute = () => {
+    return (
+      routes.private.some((route) => pathname.includes(route)) && token !== ""
+    );
+  };
 
   return (
     dontNeedNavbar && (
@@ -33,7 +39,7 @@ export function Navbar() {
             </h1>
           </div>
 
-          {token && (
+          {isInPrivateRoute() && (
             <Button
               type="button"
               variant="link"

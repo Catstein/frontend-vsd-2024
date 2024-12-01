@@ -12,10 +12,16 @@ export function ContactCard({ icon: Icon, title, text }: ContactCardProps) {
       <Icon className="w-[1.5rem] text-[#51525C]" />
 
       <div className="flex flex-col gap-2">
-        <p className="font-normal text-[0.875rem] leading-[1.3125rem] text-[#51525C]">
+        <p
+          title={title}
+          className="font-normal text-[0.875rem] leading-[1.3125rem] text-[#51525C]"
+        >
           {title}
         </p>
-        <p className="font-semibold text-[1.25rem] leading-[1.6625rem] text-[#18181B] truncate">
+        <p
+          title={text}
+          className="font-semibold text-[1.25rem] leading-[1.6625rem] text-[#18181B] truncate"
+        >
           {text}
         </p>
       </div>

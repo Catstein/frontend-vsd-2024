@@ -44,7 +44,7 @@ export function Input({
               htmlFor={name}
               className="font-semibold text-sm leading-[1.3125rem] text-[#18181B]"
             >
-              {title}{" "}
+              {title}
               {subtitle && (
                 <span className="font-normal text-[#51525C]">{subtitle}</span>
               )}
@@ -85,8 +85,7 @@ export function Input({
                   field.onChange(event.target.value);
                 }
               }}
-              // ref={ref}
-              {...props}
+              value={field.value ?? ""}
             />
           </div>
           {errors[field.name]?.message && (

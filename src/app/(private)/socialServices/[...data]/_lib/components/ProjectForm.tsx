@@ -14,7 +14,7 @@ import { publicUnitOptions } from "@/models/staticOptionValues/publicUnitOptions
 import { serviceProviderOptions } from "@/models/staticOptionValues/serviceProviderOptions";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { SelectInput } from "./SelectInput";
@@ -24,15 +24,17 @@ import { useToken } from "@/contexts/useToken";
 import { toast } from "react-toastify";
 import { MessageToast } from "@/components/MessageToast";
 import { getSocialService } from "@/services/socialServices/getSocialService";
+import { findManyPublicServiceCategory } from "@/services/serviceCategories/findManyPublicServiceCategory";
+import { ECategoryStatus } from "@/models/ECategoryStatus";
 
 interface ProjectFormProps {
   serviceUid?: string;
 }
 
-export const emailRegex =
+const emailRegex =
   /^[a-zA-Z0-9.!#$%&'*+/çÇ=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
-const phoneRegex = /^\(\d{2}\)\s?\d{4,5}-\d{4}$/;
+const phoneRegex = /^\d{10,11}$/;
 
 const socialServiceFormSchema = z.object({
   service_name: z
@@ -41,7 +43,7 @@ const socialServiceFormSchema = z.object({
     .max(100, "Limite de caracteres excedido.Permitido até: 100."),
   service_category: z
     .string({ message: "Campo obrigatório" })
-    .uuid({ message: "Invalid UUID" }),
+    .min(1, "Campo obrigatório"),
   description: z
     .string({ message: "Campo obrigatório" })
     .min(1, "Campo obrigatório")
@@ -54,11 +56,6 @@ const socialServiceFormSchema = z.object({
     .string({ message: "Campo obrigatório" })
     .min(1, "Campo obrigatório")
     .max(50, "Limite de caracteres excedido.Permitido até: 50."),
-  email: z
-    .string({ message: "Campo obrigatório" })
-    .email("Formato de e-mail inválido")
-    .optional(),
-
   contactType: z.enum(["phone", "email"], { message: "Campo obrigatório" }),
   contactInfo: z
     .string({ message: "Campo obrigatório" })
@@ -68,25 +65,26 @@ const socialServiceFormSchema = z.object({
     ),
   website: z
     .string({ message: "Campo obrigatório" })
+    .min(1, "Campo obrigatório")
     .url("O site deve possuir o prefixo: 'https://'"),
   status: z.enum([ESocialServiceStatus.ENABLED, ESocialServiceStatus.DISABLED]),
-  organ: z.string().max(100).optional(),
-  management: z.string().max(100).optional(),
-  public_unit: z.string().max(100).optional(),
-  organization: z.string().max(100).optional(),
-  service_provider: z.string().max(100).optional(),
-  main_law: z.string().max(255).optional(),
-  municipal_law: z.string().max(255).optional(),
-  laws: z.string().max(255).optional(),
-  naming_of_laws: z.string().max(255).optional(),
+  organ: z.string().max(100).optional().nullish(),
+  management: z.string().max(100).optional().nullish(),
+  public_unit: z.string().max(100).optional().nullish(),
+  organization: z.string().max(100).optional().nullish(),
+  service_provider: z.string().max(100).optional().nullish(),
+  main_law: z.string().max(255).optional().nullish(),
+  municipal_law: z.string().max(255).optional().nullish(),
+  laws: z.string().max(255).optional().nullish(),
+  naming_of_laws: z.string().max(255).optional().nullish(),
 });
 
 type SocialServiceFormSchema = z.infer<typeof socialServiceFormSchema>;
 
 export function ProjectForm({ serviceUid }: ProjectFormProps) {
-  const router = useRouter();
+  const createMode = serviceUid === "create";
 
-  const createMode = serviceUid !== undefined;
+  const router = useRouter();
 
   const { token, setToken } = useToken();
 
@@ -99,17 +97,59 @@ export function ProjectForm({ serviceUid }: ProjectFormProps) {
       },
     });
 
-  console.log("formValue", watch());
+  const [isLoadingCategoryList, startCategoryFetch] = useTransition();
 
-  const [isLoading, startTransition] = useTransition();
+  const [serviceCategoryInitialValue, setServiceCategoryInitialValue] =
+    useState("");
+
+  const [categoryList, setCategoryList] = useState<
+    {
+      value: string;
+      label: string;
+    }[]
+  >([]);
+
+  const getCategoryList = () => {
+    startCategoryFetch(async () => {
+      const res = await findManyPublicServiceCategory({
+        payload: {
+          search: "",
+          status: ECategoryStatus.ENABLED,
+          page: 1,
+          pageSize: 10,
+        },
+        config: {},
+      });
+
+      const metaList = res.data.map((category) => {
+        return {
+          value: category.uid,
+          label: category.name,
+        };
+      });
+
+      setCategoryList(metaList);
+    });
+  };
 
   function onSubmit(data: SocialServiceFormSchema) {
-    startTransition(() => {
+    const isUid =
+      /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i.test(
+        data.service_category
+      );
+
+    const serviceCategoryMetadata = isUid
+      ? { uid: data.service_category }
+      : { name: data.service_category };
+
+    startCategoryFetch(() => {
       handleSocialService({
         payload: {
           ...data,
           uid: serviceUid,
-          service_category: { uid: data.service_category },
+          service_category: serviceCategoryMetadata,
+          email: data.contactType === "email" ? data.contactInfo : undefined,
+          phone: data.contactType === "phone" ? data.contactInfo : undefined,
         },
         config: {
           headers: {
@@ -118,8 +158,6 @@ export function ProjectForm({ serviceUid }: ProjectFormProps) {
         },
       })
         .then((res) => {
-          console.log("res", res);
-
           toast((e) => (
             <MessageToast
               closeToast={e.closeToast}
@@ -128,20 +166,20 @@ export function ProjectForm({ serviceUid }: ProjectFormProps) {
               text="Serviço adicionado com sucesso"
             />
           ));
+
+          router.push("/socialServices");
         })
         .catch((err) => {
-          console.log("err", err);
-
           toast((e) => (
             <MessageToast
               closeToast={e.closeToast}
               type="error"
-              title="Token expirado"
-              text="Efetue login novamente como medida de segurança"
+              title="Algo errado ocorreu."
+              text="Entre em contato com o suporte."
             />
           ));
 
-          setToken("");
+          // setToken("");
         });
     });
   }
@@ -152,26 +190,51 @@ export function ProjectForm({ serviceUid }: ProjectFormProps) {
     else return "Tipo de contato";
   }, [watch]);
 
-  async function handleGetSocialService(serviceUid: string) {
-    const res = await getSocialService({
-      payload: {
-        uid: serviceUid,
-      },
-      config: {},
+  const [isLoadingFormData, startTransition] = useTransition();
+
+  function handleGetSocialService(serviceUid: string) {
+    startTransition(async () => {
+      const res = await getSocialService({
+        payload: {
+          uid: serviceUid,
+        },
+        config: {},
+      });
+
+      let contactType: "email" | "phone" | undefined;
+      let contactInfo;
+
+      if (res.email !== undefined && emailRegex.test(res.email)) {
+        contactType = "email";
+        contactInfo = res.email;
+      } else if (res.phone !== undefined && phoneRegex.test(res.phone)) {
+        contactType = "phone";
+        contactInfo = res.phone;
+      }
+
+      setServiceCategoryInitialValue(res.service_category.name ?? "");
+
+      reset(
+        {
+          ...res,
+          service_category: res.service_category.uid,
+          contactType,
+          contactInfo,
+        },
+        {
+          keepValues: false,
+        }
+      );
     });
-
-    console.log("res", res);
-
-    reset({});
   }
 
   useEffect(() => {
-    console.log("serviceUid", serviceUid);
+    getCategoryList();
 
-    if (createMode === false && serviceUid !== undefined) {
-      handleGetSocialService(serviceUid).then();
+    if (serviceUid !== undefined && serviceUid !== "create") {
+      handleGetSocialService(serviceUid);
     }
-  }, []);
+  }, [serviceUid]);
 
   return (
     <PrivateSection className="w-[50rem]">
@@ -199,219 +262,215 @@ export function ProjectForm({ serviceUid }: ProjectFormProps) {
             Cadastro de Serviços
           </h1>
 
-          <div className="w-full flex flex-col gap-4">
-            <div className="flex gap-8 w-full">
-              <Input
-                name="service_name"
-                title="Nome do serviço"
-                placeholder="Digite o nome do serviço"
-                control={control}
-              />
+          {isLoadingFormData === true && <div>Carregando...</div>}
 
-              <SelectInput
-                name="service_category"
-                title="Categoria do serviço"
-                placeholder="Selecione a categoria do serviço"
-                control={control}
-                optionList={[
-                  {
-                    value: "email",
-                    label: "E-mail",
-                  },
-                  {
-                    value: "phone",
-                    label: "Telefone",
-                  },
-                ]}
-              />
+          {isLoadingFormData === false && (
+            <div className="w-full flex flex-col gap-4">
+              <div className="flex gap-8 w-full">
+                <Input
+                  name="service_name"
+                  title="Nome do serviço"
+                  placeholder="Digite o nome do serviço"
+                  control={control}
+                />
+
+                <SelectInput
+                  name="service_category"
+                  title="Categoria do serviço"
+                  placeholder="Selecione a categoria do serviço"
+                  control={control}
+                  optionList={categoryList}
+                  readOnly
+                />
+              </div>
+
+              <div className="flex w-full">
+                <Textarea
+                  name="description"
+                  title="Descrição"
+                  placeholder="Digite aqui a descrição do serviço "
+                  control={control}
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex gap-8 w-full">
+                <Input
+                  name="agent_name"
+                  title="Nome do profissional"
+                  placeholder="Nome do profissional responsável"
+                  control={control}
+                />
+
+                <Input
+                  name="agent_role"
+                  title="Especialidade do profissional"
+                  placeholder="Especialidade do profissional"
+                  control={control}
+                />
+              </div>
+
+              <div className="flex w-full"></div>
+
+              <div className="flex gap-8 w-full">
+                <SelectInput
+                  name="contactType"
+                  title="Tipo de contato"
+                  placeholder="Selecione o tipo de contato"
+                  control={control}
+                  optionList={[
+                    {
+                      value: "email",
+                      label: "E-mail",
+                    },
+                    {
+                      value: "phone",
+                      label: "Telefone",
+                    },
+                  ]}
+                />
+
+                {/* email / phone */}
+                <Input
+                  name="contactInfo"
+                  title={currentContact()}
+                  placeholder={`Digite o ${currentContact()}`}
+                  control={control}
+                  // onBlurHandler={(event) => {
+                  //   const fieldValue = event.target.value;
+
+                  //   if (phoneRegex.test(fieldValue)) {
+                  //     event.target.value = fieldValue;
+                  //   } else {
+                  //     event.target.value = fieldValue;
+                  //   }
+                  // }}
+                />
+              </div>
+
+              <div className="flex w-full">
+                <Input
+                  name="website"
+                  title="Site do serviço "
+                  defaultValue="https://"
+                  placeholder="http://..."
+                  control={control}
+                />
+              </div>
+
+              <div className="flex gap-8 w-full">
+                <SelectInput
+                  name="organ"
+                  title="Órgão"
+                  subtitle="(opcional)"
+                  placeholder="Selecione o órgão"
+                  control={control}
+                  optionList={organOptions}
+                />
+
+                <SelectInput
+                  name="management"
+                  title="Gestão"
+                  subtitle="(opcional)"
+                  placeholder="Selecione a gestão"
+                  control={control}
+                  optionList={managementOptions}
+                />
+              </div>
+
+              <div className="flex w-full">
+                <SelectInput
+                  name="public_unit"
+                  title="Unidade pública"
+                  subtitle="(opcional)"
+                  placeholder="Selecione a unidade pública "
+                  control={control}
+                  optionList={publicUnitOptions}
+                />
+              </div>
+
+              <div className="flex gap-8 w-full">
+                <SelectInput
+                  name="organization"
+                  title="Organização"
+                  subtitle="(opcional)"
+                  placeholder="Selecione a organização "
+                  control={control}
+                  optionList={organizationOptions}
+                />
+
+                <SelectInput
+                  name="service_provider"
+                  title="Prestadores de serviços"
+                  subtitle="(opcional)"
+                  placeholder="Selecione os prestadores de serviços"
+                  control={control}
+                  optionList={serviceProviderOptions}
+                />
+              </div>
+
+              <div className="flex gap-8 w-full">
+                <Input
+                  name="main_law"
+                  title="Lei principal"
+                  subtitle="(opcional)"
+                  placeholder="Selecione a lei principal"
+                  control={control}
+                />
+
+                <Input
+                  name="municipal_law"
+                  title="Lei municipal"
+                  subtitle="(opcional)"
+                  placeholder="Selecione a lei municipal"
+                  control={control}
+                />
+              </div>
+
+              <div className="flex w-full">
+                <Textarea
+                  name="laws"
+                  title="Leis"
+                  subtitle="(opcional)"
+                  placeholder="Digite aqui as leis"
+                  control={control}
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex w-full">
+                <Textarea
+                  name="naming_of_laws"
+                  title="Nomeação das leis"
+                  subtitle="(opcional)"
+                  placeholder="Digite aqui a nomeação das leis"
+                  control={control}
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex w-full">
+                <Checkbox
+                  control={control}
+                  name="status"
+                  possibleValues={{
+                    checked: ESocialServiceStatus.ENABLED,
+                    unchecked: ESocialServiceStatus.DISABLED,
+                  }}
+                  title="Status de exibição"
+                  message="Exibir serviço"
+                  disabled={createMode}
+                />
+              </div>
             </div>
-
-            <div className="flex w-full">
-              <Textarea
-                name="description"
-                title="Descrição"
-                placeholder="Digite aqui a descrição do serviço "
-                control={control}
-                rows={3}
-              />
-            </div>
-
-            <div className="flex gap-8 w-full">
-              <Input
-                name="agent_name"
-                title="Nome do profissional"
-                placeholder="Nome do profissional responsável"
-                control={control}
-              />
-
-              <Input
-                name="agent_role"
-                title="Especialidade do profissional"
-                placeholder="Especialidade do profissional"
-                control={control}
-              />
-            </div>
-
-            <div className="flex w-full"></div>
-
-            <div className="flex gap-8 w-full">
-              <SelectInput
-                name="contactType"
-                title="Tipo de contato"
-                placeholder="Selecione o tipo de contato"
-                control={control}
-                optionList={[
-                  {
-                    value: "email",
-                    label: "E-mail",
-                  },
-                  {
-                    value: "phone",
-                    label: "Telefone",
-                  },
-                ]}
-              />
-
-              {/* email / phone */}
-              <Input
-                name="contactInfo"
-                title={currentContact()}
-                placeholder={`Digite o ${currentContact()}`}
-                control={control}
-                // onBlurHandler={(event) => {
-                //   const fieldValue = event.target.value;
-
-                //   if (phoneRegex.test(fieldValue)) {
-                //     event.target.value = fieldValue;
-                //   } else {
-                //     event.target.value = fieldValue;
-                //   }
-                // }}
-              />
-            </div>
-
-            <div className="flex w-full">
-              <Input
-                name="website"
-                title="Site do serviço "
-                defaultValue="https://"
-                placeholder="http://..."
-                control={control}
-              />
-            </div>
-
-            <div className="flex gap-8 w-full">
-              <SelectInput
-                name="organ"
-                title="Órgão"
-                subtitle="(opcional)"
-                placeholder="Selecione o órgão"
-                control={control}
-                optionList={organOptions}
-              />
-
-              <SelectInput
-                name="management"
-                title="Gestão"
-                subtitle="(opcional)"
-                placeholder="Selecione a gestão"
-                control={control}
-                optionList={managementOptions}
-              />
-            </div>
-
-            <div className="flex w-full">
-              <SelectInput
-                name="public_unit"
-                title="Unidade pública"
-                subtitle="(opcional)"
-                placeholder="Selecione a unidade pública "
-                control={control}
-                optionList={publicUnitOptions}
-              />
-            </div>
-
-            <div className="flex gap-8 w-full">
-              <SelectInput
-                name="organization"
-                title="Organização"
-                subtitle="(opcional)"
-                placeholder="Selecione a organização "
-                control={control}
-                optionList={organizationOptions}
-              />
-
-              <SelectInput
-                name="service_provider"
-                title="Prestadores de serviços"
-                subtitle="(opcional)"
-                placeholder="Selecione os prestadores de serviços"
-                control={control}
-                optionList={serviceProviderOptions}
-              />
-            </div>
-
-            <div className="flex gap-8 w-full">
-              <Input
-                name="main_law"
-                title="Lei principal"
-                subtitle="(opcional)"
-                placeholder="Selecione a lei principal"
-                control={control}
-              />
-
-              <Input
-                name="municipal_law"
-                title="Lei municipal"
-                subtitle="(opcional)"
-                placeholder="Selecione a lei municipal"
-                control={control}
-              />
-            </div>
-
-            <div className="flex w-full">
-              <Textarea
-                name="laws"
-                title="Leis"
-                subtitle="(opcional)"
-                placeholder="Digite aqui as leis"
-                control={control}
-                rows={3}
-              />
-            </div>
-
-            <div className="flex w-full">
-              <Textarea
-                name="naming_of_laws"
-                title="Nomeação das leis"
-                subtitle="(opcional)"
-                placeholder="Digite aqui a nomeação das leis"
-                control={control}
-                rows={3}
-              />
-            </div>
-
-            <div className="flex w-full">
-              <Checkbox
-                control={control}
-                name="status"
-                possibleValues={{
-                  checked: ESocialServiceStatus.ENABLED,
-                  unchecked: ESocialServiceStatus.DISABLED,
-                }}
-                title="Status de exibição"
-                message="Exibir serviço"
-                disabled={createMode}
-              />
-            </div>
-          </div>
+          )}
         </PrivateCardContainer>
         <Button
           type="submit"
-          disabled={isLoading === true}
+          disabled={isLoadingCategoryList === true}
           className="self-end w-[11rem]"
         >
-          {isLoading === true ? "Carregando" : "Salvar"}
+          {isLoadingCategoryList === true ? "Carregando" : "Salvar"}
         </Button>
       </form>
     </PrivateSection>

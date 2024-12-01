@@ -82,6 +82,7 @@ export function Textarea({
                   field.onChange(event.target.value);
                 }
               }}
+              value={field.value ?? ""}
             />
           </div>
           {errors[field.name]?.message && (

@@ -16,7 +16,6 @@ export async function getSocialService({
     `/public/socialServices/${payload.uid}`,
     config
   );
-  console.log("response", response);
 
   return response.data;
 }

@@ -7,7 +7,7 @@ export function AboutSection() {
       <div className="flex flex-col max-w-full w-[50rem] py-[4.5rem] max-md:py-0 justify-center gap-12">
         <div className="flex gap-[2rem] flex-col w-full">
           <div>
-            <Badge>Sobre o Projeto</Badge>
+            <Badge>Sobre o Conselho Tutelar de Piracicaba</Badge>
           </div>
 
           <div className="flex flex-col gap-6 w-full">
@@ -16,24 +16,10 @@ export function AboutSection() {
             </h1>
 
             <p className="max-md:text-base max-md:leading-[1.5rem] font-normal text-[1.25rem] leading-[1.875rem] text-[#51525C]">
-              O Conselho Tutelar de Piracicaba lançou uma nova iniciativa
-              voltada para o apoio e proteção das crianças e adolescentes da
-              cidade. Com o objetivo de fortalecer a rede de apoio social, o
-              projeto oferece oficinas educativas para pais e responsáveis,
-              abordando temas como direitos da criança, prevenção de abusos e
-              promoção da saúde mental. Além disso, serão realizadas palestras
-              em escolas e comunidades, incentivando a participação ativa da
-              sociedade na proteção dos jovens.
-            </p>
-            <p className="max-md:text-base max-md:leading-[1.5rem] font-normal text-[1.25rem] leading-[1.875rem] text-[#51525C]">
-              A iniciativa também conta com parcerias com instituições locais
-              para garantir um atendimento mais abrangente. A ideia é criar um
-              ambiente seguro e acolhedor para todos, promovendo o bem-estar e a
-              cidadania. Com isso, espera-se reduzir casos de vulnerabilidade e
-              fortalecer os laços comunitários.
-            </p>
-            <p className="max-md:text-base max-md:leading-[1.5rem] font-normal text-[1.25rem] leading-[1.875rem] text-[#51525C]">
-              Juntos, podemos construir um futuro melhor para nossas crianças!
+              O Conselho Tutelar de Piracicaba existe para garantir que os
+              direitos das crianças e adolescentes sejam cumpridos, oferecendo
+              suporte e proteção para que possam viver com dignidade e
+              segurança.
             </p>
           </div>
         </div>

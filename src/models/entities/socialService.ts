@@ -6,7 +6,7 @@ export interface ISocialService {
   uid: string;
   service_name: string;
   service_category: {
-    uid: IServiceCategory["uid"];
+    uid?: IServiceCategory["uid"];
     name?: IServiceCategory["name"];
     status?: ECategoryStatus;
   };

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { ISocialService } from "@/models/entities/socialService";
 import { getSocialService } from "@/services/socialServices/getSocialService";
 import {
+  EnvelopeIcon,
   MapPinIcon,
   PhoneIcon,
   ShareIcon,
@@ -76,10 +77,23 @@ export function ServiceModal() {
               </div>
 
               <div className="inline-flex gap-1 text-[#0057A6]">
-                <PhoneIcon className="w-[1.3rem]" />
-                <p className="font-medium text-sm leading-[1.5rem] ">
-                  {currentSocialService?.phone}
-                </p>
+                {currentSocialService?.phone && (
+                  <>
+                    <PhoneIcon className="w-[1.3rem]" />
+                    <p className="font-medium text-sm leading-[1.5rem] ">
+                      {currentSocialService?.phone}
+                    </p>
+                  </>
+                )}
+
+                {currentSocialService?.email && (
+                  <>
+                    <EnvelopeIcon className="w-[1.3rem]" />
+                    <p className="font-medium text-sm leading-[1.5rem] ">
+                      {currentSocialService?.email}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
 
