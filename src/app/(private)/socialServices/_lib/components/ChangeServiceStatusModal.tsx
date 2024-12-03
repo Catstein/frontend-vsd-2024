@@ -97,18 +97,18 @@ export function ChangeServiceStatusModal({
         <div className="flex w-full h-min flex-col gap-6">
           <div className="flex flex-col gap-1 w-full">
             <h1 className="font-semibold text-xl leading-[1.6625rem] text-[#18181B] text-center">
-              Alterar status do serviço: <br />
+              Alterar status de exibição do serviço: <br />
               &ldquo;{serviceData.service_name}
               &ldquo;
             </h1>
           </div>
 
           <p className="text-center font-normal text-[1rem] leading-[1.5rem] text-[#51525C]">
-            Tem certeza que deseja alterar o status do serviço para{" "}
+            Tem certeza que deseja alterar o status de exibição do serviço para{" "}
             <b>
               {serviceData.status === ESocialServiceStatus.ENABLED
-                ? "Inativo"
-                : "Ativo"}
+                ? "Não exibido para a população"
+                : "Exibido para a população"}
             </b>
             ?
           </p>

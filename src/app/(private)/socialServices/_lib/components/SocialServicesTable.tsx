@@ -16,6 +16,8 @@ import {
   SocialServiceParams,
 } from "@/services/socialServices/findManySocialServices";
 import {
+  EyeIcon,
+  EyeSlashIcon,
   PencilSquareIcon,
   PlusIcon,
   TrashIcon,
@@ -157,7 +159,7 @@ export function SocialServicesTable() {
                 <Table.Row>
                   <Table.Column>Nome do profissional</Table.Column>
                   <Table.Column>Contato</Table.Column>
-                  <Table.Column>Status</Table.Column>
+                  <Table.Column>Status de exibição</Table.Column>
                   <Table.Column>Categoria</Table.Column>
                   <Table.Column>Ações</Table.Column>
                 </Table.Row>
@@ -170,8 +172,8 @@ export function SocialServicesTable() {
                     <Table.Data>{currentService.phone}</Table.Data>
                     <Table.Data>
                       {currentService.status === ESocialServiceStatus.ENABLED
-                        ? "Ativo"
-                        : "Inativo"}
+                        ? "Exibindo para a população"
+                        : "Não exibido para a população"}
                     </Table.Data>
                     <Table.Data>
                       <Badge>{currentService.service_category.name}</Badge>
@@ -194,7 +196,12 @@ export function SocialServicesTable() {
                           setServiceToUpdateStatus(currentService);
                         }}
                       >
-                        <TrashIcon className="w-[1.2rem] text-[#DC2625]" />
+                        {currentService.status ===
+                        ESocialServiceStatus.ENABLED ? (
+                          <EyeSlashIcon className="w-[1.2rem] text-[#51525C]" />
+                        ) : (
+                          <EyeIcon className="w-[1.2rem] text-[#51525C]" />
+                        )}
                       </Button>
                     </Table.Data>
                   </Table.Row>

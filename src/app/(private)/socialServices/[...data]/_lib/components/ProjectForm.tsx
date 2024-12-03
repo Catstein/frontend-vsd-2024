@@ -1,40 +1,35 @@
 "use client";
 
+import { MessageToast } from "@/components/MessageToast";
 import { PrivateCardContainer } from "@/components/PrivateCardContainer";
 import { PrivateSection } from "@/components/PrivateSection";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import { useToken } from "@/contexts/useToken";
+import { ECategoryStatus } from "@/models/ECategoryStatus";
 import { ESocialServiceStatus } from "@/models/ESocialServiceStatus";
 import { managementOptions } from "@/models/staticOptionValues/managementOptions";
 import { organizationOptions } from "@/models/staticOptionValues/organizationOptions";
 import { organOptions } from "@/models/staticOptionValues/organOptions";
 import { publicUnitOptions } from "@/models/staticOptionValues/publicUnitOptions";
 import { serviceProviderOptions } from "@/models/staticOptionValues/serviceProviderOptions";
+import { findManyPublicServiceCategory } from "@/services/serviceCategories/findManyPublicServiceCategory";
+import { getSocialService } from "@/services/socialServices/getSocialService";
+import { handleSocialService } from "@/services/socialServices/handleSocialService";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 import { z } from "zod";
 import { SelectInput } from "./SelectInput";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { handleSocialService } from "@/services/socialServices/handleSocialService";
-import { useToken } from "@/contexts/useToken";
-import { toast } from "react-toastify";
-import { MessageToast } from "@/components/MessageToast";
-import { getSocialService } from "@/services/socialServices/getSocialService";
-import { findManyPublicServiceCategory } from "@/services/serviceCategories/findManyPublicServiceCategory";
-import { ECategoryStatus } from "@/models/ECategoryStatus";
 
 interface ProjectFormProps {
   serviceUid?: string;
 }
-
-const emailRegex =
-  /^[a-zA-Z0-9.!#$%&'*+/çÇ=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-
-const phoneRegex = /^\d{10,11}$/;
 
 const socialServiceFormSchema = z.object({
   service_name: z
@@ -47,7 +42,7 @@ const socialServiceFormSchema = z.object({
   description: z
     .string({ message: "Campo obrigatório" })
     .min(1, "Campo obrigatório")
-    .max(255, "Limite de caracteres excedido.Permitido até: 255."),
+    .max(1500, "Limite de caracteres excedido.Permitido até: 1500."),
   agent_name: z
     .string({ message: "Campo obrigatório" })
     .min(1, "Campo obrigatório")
@@ -56,13 +51,11 @@ const socialServiceFormSchema = z.object({
     .string({ message: "Campo obrigatório" })
     .min(1, "Campo obrigatório")
     .max(50, "Limite de caracteres excedido.Permitido até: 50."),
-  contactType: z.enum(["phone", "email"], { message: "Campo obrigatório" }),
-  contactInfo: z
-    .string({ message: "Campo obrigatório" })
-    .refine(
-      (value) => phoneRegex.test(value) || emailRegex.test(value),
-      "Insira um Telefone ou E-mail válido"
-    ),
+  phone: z
+    .string()
+    .regex(/^\(\d{2}\) \d{4,5}-\d{4}$/, "Telefone inválido")
+    .optional(),
+  email: z.string().optional(),
   website: z
     .string({ message: "Campo obrigatório" })
     .min(1, "Campo obrigatório")
@@ -99,9 +92,6 @@ export function ProjectForm({ serviceUid }: ProjectFormProps) {
 
   const [isLoadingCategoryList, startCategoryFetch] = useTransition();
 
-  const [serviceCategoryInitialValue, setServiceCategoryInitialValue] =
-    useState("");
-
   const [categoryList, setCategoryList] = useState<
     {
       value: string;
@@ -116,7 +106,7 @@ export function ProjectForm({ serviceUid }: ProjectFormProps) {
           search: "",
           status: ECategoryStatus.ENABLED,
           page: 1,
-          pageSize: 10,
+          pageSize: 30,
         },
         config: {},
       });
@@ -148,8 +138,7 @@ export function ProjectForm({ serviceUid }: ProjectFormProps) {
           ...data,
           uid: serviceUid,
           service_category: serviceCategoryMetadata,
-          email: data.contactType === "email" ? data.contactInfo : undefined,
-          phone: data.contactType === "phone" ? data.contactInfo : undefined,
+          phone: data.phone?.replace(/\D/g, ""),
         },
         config: {
           headers: {
@@ -162,8 +151,12 @@ export function ProjectForm({ serviceUid }: ProjectFormProps) {
             <MessageToast
               closeToast={e.closeToast}
               type="success"
-              title="Serviço adicionado"
-              text="Serviço adicionado com sucesso"
+              title={`Serviço ${
+                createMode === true ? "adicionado" : "atualizado"
+              }`}
+              text={`Serviço ${
+                createMode === true ? "adicionado" : "atualizado"
+              } com sucesso`}
             />
           ));
 
@@ -184,12 +177,6 @@ export function ProjectForm({ serviceUid }: ProjectFormProps) {
     });
   }
 
-  const currentContact = useCallback(() => {
-    if (watch("contactType") === "email") return "E-mail";
-    else if (watch("contactType") === "phone") return "Telefone";
-    else return "Tipo de contato";
-  }, [watch]);
-
   const [isLoadingFormData, startTransition] = useTransition();
 
   function handleGetSocialService(serviceUid: string) {
@@ -201,25 +188,25 @@ export function ProjectForm({ serviceUid }: ProjectFormProps) {
         config: {},
       });
 
-      let contactType: "email" | "phone" | undefined;
-      let contactInfo;
+      let formatedPhone;
 
-      if (res.email !== undefined && emailRegex.test(res.email)) {
-        contactType = "email";
-        contactInfo = res.email;
-      } else if (res.phone !== undefined && phoneRegex.test(res.phone)) {
-        contactType = "phone";
-        contactInfo = res.phone;
+      if (res.phone && res.phone.length >= 11) {
+        formatedPhone = res.phone
+          .replace(/(\d{2})(\d)/, "($1) $2")
+          .replace(/(\d{5})(\d)/, "$1-$2")
+          .replace(/(\d{4})/, "$1");
+      } else if (res.phone) {
+        formatedPhone = res.phone
+          .replace(/(\d{2})(\d)/, "($1) $2")
+          .replace(/(\d{4})(\d)/, "$1-$2")
+          .replace(/(\d{4})/, "$1");
       }
-
-      setServiceCategoryInitialValue(res.service_category.name ?? "");
 
       reset(
         {
           ...res,
+          phone: formatedPhone,
           service_category: res.service_category.uid,
-          contactType,
-          contactInfo,
         },
         {
           keepValues: false,
@@ -280,7 +267,6 @@ export function ProjectForm({ serviceUid }: ProjectFormProps) {
                   placeholder="Selecione a categoria do serviço"
                   control={control}
                   optionList={categoryList}
-                  readOnly
                 />
               </div>
 
@@ -310,50 +296,52 @@ export function ProjectForm({ serviceUid }: ProjectFormProps) {
                 />
               </div>
 
-              <div className="flex w-full"></div>
-
-              <div className="flex gap-8 w-full">
-                <SelectInput
-                  name="contactType"
-                  title="Tipo de contato"
-                  placeholder="Selecione o tipo de contato"
-                  control={control}
-                  optionList={[
-                    {
-                      value: "email",
-                      label: "E-mail",
-                    },
-                    {
-                      value: "phone",
-                      label: "Telefone",
-                    },
-                  ]}
-                />
-
-                {/* email / phone */}
-                <Input
-                  name="contactInfo"
-                  title={currentContact()}
-                  placeholder={`Digite o ${currentContact()}`}
-                  control={control}
-                  // onBlurHandler={(event) => {
-                  //   const fieldValue = event.target.value;
-
-                  //   if (phoneRegex.test(fieldValue)) {
-                  //     event.target.value = fieldValue;
-                  //   } else {
-                  //     event.target.value = fieldValue;
-                  //   }
-                  // }}
-                />
-              </div>
-
               <div className="flex w-full">
                 <Input
                   name="website"
                   title="Site do serviço "
                   defaultValue="https://"
                   placeholder="http://..."
+                  control={control}
+                />
+              </div>
+
+              <div className="flex gap-8 w-full">
+                <Input
+                  name="phone"
+                  title="Telefone"
+                  subtitle="(opcional)"
+                  placeholder="Digite o Telefone"
+                  control={control}
+                  onChangeHandler={(event) => {
+                    const phoneValue = event.target.value;
+
+                    let result;
+                    const valueWithouMask = phoneValue.replace(/\D/g, "");
+
+                    if (valueWithouMask.length >= 11) {
+                      result = valueWithouMask
+                        .replace(/(\d{2})(\d)/, "($1) $2")
+                        .replace(/(\d{5})(\d)/, "$1-$2")
+                        .replace(/(\d{4})/, "$1");
+                    } else {
+                      result = valueWithouMask
+                        .replace(/(\d{2})(\d)/, "($1) $2")
+                        .replace(/(\d{4})(\d)/, "$1-$2")
+                        .replace(/(\d{4})/, "$1");
+                    }
+
+                    event.target.value = result;
+
+                    return event;
+                  }}
+                />
+
+                <Input
+                  name="email"
+                  title="E-mail"
+                  subtitle="(opcional)"
+                  placeholder="Digite o E-mail"
                   control={control}
                 />
               </div>

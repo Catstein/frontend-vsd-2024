@@ -45,6 +45,28 @@ export function ServiceModal() {
     handleGetSocialService();
   }, []);
 
+  function handlePhoneValue(phone: string) {
+    if (phone === undefined) {
+      return "";
+    }
+
+    let result;
+
+    if (phone.length === 11) {
+      result = phone
+        .replace(/(\d{2})(\d)/, "($1) $2")
+        .replace(/(\d{5})(\d)/, "$1-$2")
+        .replace(/(\d{4})/, "$1");
+    } else {
+      result = phone
+        .replace(/(\d{2})(\d)/, "($1) $2")
+        .replace(/(\d{4})(\d)/, "$1-$2")
+        .replace(/(\d{4})/, "$1");
+    }
+
+    return result;
+  }
+
   return (
     <ModalRoot>
       {isLoading === true && "Carregando..."}
@@ -76,23 +98,23 @@ export function ServiceModal() {
                 </div>
               </div>
 
-              <div className="inline-flex gap-1 text-[#0057A6]">
+              <div className="flex flex-col gap-1 text-[#0057A6]">
                 {currentSocialService?.phone && (
-                  <>
+                  <div className="flex gap-1">
                     <PhoneIcon className="w-[1.3rem]" />
                     <p className="font-medium text-sm leading-[1.5rem] ">
-                      {currentSocialService?.phone}
+                      {handlePhoneValue(currentSocialService?.phone)}
                     </p>
-                  </>
+                  </div>
                 )}
 
                 {currentSocialService?.email && (
-                  <>
+                  <div className="flex gap-1">
                     <EnvelopeIcon className="w-[1.3rem]" />
                     <p className="font-medium text-sm leading-[1.5rem] ">
                       {currentSocialService?.email}
                     </p>
-                  </>
+                  </div>
                 )}
               </div>
             </div>

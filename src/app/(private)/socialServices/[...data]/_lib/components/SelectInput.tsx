@@ -100,7 +100,7 @@ export function SelectInput({
                 />
               </SelectTrigger>
 
-              <ChevronDownIcon className="absolute w-4 right-4 top-3 text-[]" />
+              <ChevronDownIcon className="pointer-events-none absolute w-4 right-4 top-3 text-[]" />
 
               <input
                 data-invalid={invalid}

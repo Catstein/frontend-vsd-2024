@@ -14,13 +14,13 @@ export function ContactCard({ icon: Icon, title, text }: ContactCardProps) {
       <div className="flex flex-col gap-2">
         <p
           title={title}
-          className="font-normal text-[0.875rem] leading-[1.3125rem] text-[#51525C]"
+          className="font-normal max-md:text-[0.8rem] text-[0.875rem] leading-[1.3125rem] text-[#51525C]"
         >
           {title}
         </p>
         <p
           title={text}
-          className="font-semibold text-[1.25rem] leading-[1.6625rem] text-[#18181B] truncate"
+          className="font-semibold max-md:text-[0.8rem] text-[1rem] leading-[1.6625rem] text-[#18181B] truncate"
         >
           {text}
         </p>

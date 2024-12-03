@@ -46,7 +46,7 @@ export function SearchSocialServiceForm({
           search: "",
           status: ECategoryStatus.ENABLED,
           page: 1,
-          pageSize: 10,
+          pageSize: 30,
         },
         config: {},
       });

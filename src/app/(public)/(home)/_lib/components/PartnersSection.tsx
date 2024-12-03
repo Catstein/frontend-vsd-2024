@@ -87,16 +87,6 @@ export function PartnersSection() {
           />
         </a>
 
-        <a target="_blank" href="https://coollabs.com.br/">
-          <Image
-            src="/partners/coollabs-logo.png"
-            alt="Logo do conselho tutelar de piracicaba"
-            className="inline-flex mx-[1rem] object-contain !h-auto !w-[8rem]"
-            width={128}
-            height={88}
-          />
-        </a>
-
         <a target="_blank" href="https://stack2u.net/">
           <Image
             src="/partners/stack-2u-logo.png"
