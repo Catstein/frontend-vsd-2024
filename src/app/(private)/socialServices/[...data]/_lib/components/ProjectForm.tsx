@@ -31,46 +31,57 @@ interface ProjectFormProps {
   serviceUid?: string;
 }
 
-const socialServiceFormSchema = z.object({
-  service_name: z
-    .string({ message: "Campo obrigatório" })
-    .min(1, "Campo obrigatório")
-    .max(100, "Limite de caracteres excedido.Permitido até: 100."),
-  service_category: z
-    .string({ message: "Campo obrigatório" })
-    .min(1, "Campo obrigatório"),
-  description: z
-    .string({ message: "Campo obrigatório" })
-    .min(1, "Campo obrigatório")
-    .max(1500, "Limite de caracteres excedido.Permitido até: 1500."),
-  agent_name: z
-    .string({ message: "Campo obrigatório" })
-    .min(1, "Campo obrigatório")
-    .max(80, "Limite de caracteres excedido.Permitido até: 80."),
-  agent_role: z
-    .string({ message: "Campo obrigatório" })
-    .min(1, "Campo obrigatório")
-    .max(50, "Limite de caracteres excedido.Permitido até: 50."),
-  phone: z
-    .string()
-    .regex(/^\(\d{2}\) \d{4,5}-\d{4}$/, "Telefone inválido")
-    .optional(),
-  email: z.string().optional(),
-  website: z
-    .string({ message: "Campo obrigatório" })
-    .min(1, "Campo obrigatório")
-    .url("O site deve possuir o prefixo: 'https://'"),
-  status: z.enum([ESocialServiceStatus.ENABLED, ESocialServiceStatus.DISABLED]),
-  organ: z.string().max(100).optional().nullish(),
-  management: z.string().max(100).optional().nullish(),
-  public_unit: z.string().max(100).optional().nullish(),
-  organization: z.string().max(100).optional().nullish(),
-  service_provider: z.string().max(100).optional().nullish(),
-  main_law: z.string().max(255).optional().nullish(),
-  municipal_law: z.string().max(255).optional().nullish(),
-  laws: z.string().max(255).optional().nullish(),
-  naming_of_laws: z.string().max(255).optional().nullish(),
-});
+const socialServiceFormSchema = z
+  .object({
+    service_name: z
+      .string({ message: "Campo obrigatório" })
+      .min(1, "Campo obrigatório")
+      .max(100, "Limite de caracteres excedido.Permitido até: 100."),
+    service_category: z
+      .string({ message: "Campo obrigatório" })
+      .min(1, "Campo obrigatório"),
+    description: z
+      .string({ message: "Campo obrigatório" })
+      .min(1, "Campo obrigatório")
+      .max(1500, "Limite de caracteres excedido.Permitido até: 1500."),
+    agent_name: z
+      .string({ message: "Campo obrigatório" })
+      .min(1, "Campo obrigatório")
+      .max(80, "Limite de caracteres excedido.Permitido até: 80."),
+    agent_role: z
+      .string({ message: "Campo obrigatório" })
+      .min(1, "Campo obrigatório")
+      .max(50, "Limite de caracteres excedido.Permitido até: 50."),
+    phone: z.string().optional(),
+    email: z.string().optional(),
+    website: z
+      .string({ message: "Campo obrigatório" })
+      .min(1, "Campo obrigatório")
+      .url("O site deve possuir o prefixo: 'https://'"),
+    status: z.enum([
+      ESocialServiceStatus.ENABLED,
+      ESocialServiceStatus.DISABLED,
+    ]),
+    organ: z.string().max(100).optional().nullish(),
+    management: z.string().max(100).optional().nullish(),
+    public_unit: z.string().max(100).optional().nullish(),
+    organization: z.string().max(100).optional().nullish(),
+    service_provider: z.string().max(100).optional().nullish(),
+    main_law: z.string().max(255).optional().nullish(),
+    municipal_law: z.string().max(255).optional().nullish(),
+    laws: z.string().max(255).optional().nullish(),
+    naming_of_laws: z.string().max(255).optional().nullish(),
+  })
+  .refine(
+    (data) => {
+      return data.phone || data.email;
+    },
+    {
+      path: ["phone"],
+      message:
+        "Cadastre ao menos uma informação de contato (Telefone ou E-mail)",
+    }
+  );
 
 type SocialServiceFormSchema = z.infer<typeof socialServiceFormSchema>;
 
@@ -81,14 +92,20 @@ export function ProjectForm({ serviceUid }: ProjectFormProps) {
 
   const { token, setToken } = useToken();
 
-  const { control, watch, handleSubmit, reset } =
-    useForm<SocialServiceFormSchema>({
-      resolver: zodResolver(socialServiceFormSchema),
-      defaultValues: {
-        website: "https://",
-        status: ESocialServiceStatus.ENABLED,
-      },
-    });
+  const {
+    control,
+    watch,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<SocialServiceFormSchema>({
+    resolver: zodResolver(socialServiceFormSchema),
+    defaultValues: {
+      website: "https://",
+      status: ESocialServiceStatus.ENABLED,
+    },
+    mode: "onChange",
+  });
 
   const [isLoadingCategoryList, startCategoryFetch] = useTransition();
 

@@ -85,11 +85,22 @@ export function Textarea({
               value={field.value ?? ""}
             />
           </div>
-          {errors[field.name]?.message && (
-            <span className="text-[#DC2625] font-normal text-sm leading-[1.3125rem] ">
-              {errors[field.name]?.message as string}
-            </span>
-          )}
+          <div className="flex justify-between gap-1 w-full">
+            {errors[field.name]?.message && (
+              <span className="text-[#DC2625] font-normal text-sm leading-[1.3125rem]">
+                {errors[field.name]?.message as string}
+              </span>
+            )}
+
+            {!errors[field.name]?.message && (
+              <span
+                data-invalid={invalid}
+                className="text-[#51525C] font-normal text-sm leading-[1.3125rem] data-[invalid=true]:text-[#DC2625]"
+              >
+                {new String(field.value).length}/1500
+              </span>
+            )}
+          </div>
         </div>
       )}
     />
